@@ -34,7 +34,7 @@ class planet:
                 self.velocityX-= otherbody.gravity
             if xdifference>0:
                 self.velocityX+= otherbody.gravity
-        else:   #Math is broken as fuck. Task: Learn how to calculate with radians
+        else:   #Math is broken as fuck. Task: Learn how to calculate with radians Possibly the assigning to velx and vely is wrong. Investigate
             angle = math.atan(ydifference/xdifference)
             changeY = (math.sin(angle))*otherbody.gravity
             changeX = (math.cos(angle))*otherbody.gravity
