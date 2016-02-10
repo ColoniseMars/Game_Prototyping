@@ -1,4 +1,4 @@
-import pygame
+﻿import pygame
 import sys, os
 import globalvars
 import fps
@@ -20,7 +20,7 @@ Rect_posx = 0
 Rect_posy = 250
 last_posx = 0
 
-animationfactor = 1
+animationfactor = 1 #is 1 to prevent division by zero, gets corrected in tick calculation
 currentanimation = 0
 
 while True:

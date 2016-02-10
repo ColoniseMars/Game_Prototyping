@@ -1,4 +1,4 @@
-import pygame
+﻿import pygame
 
 window_height = 500
 window_width = 1000

@@ -1,9 +1,9 @@
-import pygame
+﻿import pygame
 
 window_height = 1000
 window_width = 1000
 gamename = "test"
-tickspersec = 1
+tickspersec = 10
 fps = 60
 UnlimitedFPS = False #Turning this to true makes you render as many frames per second as possible
 
