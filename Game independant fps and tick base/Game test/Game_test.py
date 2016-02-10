@@ -5,6 +5,7 @@ import fps
 
 pygame.init()
 
+
 white = (255,255,255)
 
 fpsTime = pygame.time.Clock()
