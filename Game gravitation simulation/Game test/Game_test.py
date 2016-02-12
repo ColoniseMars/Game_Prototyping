@@ -25,19 +25,28 @@ currentanimation = 0
 
 global planetlist
 planetlist = []
-#for i in range(1):
-#    planetlist.append(PlanetClass.planet(0.01, 500, 400+(i), 10, 0, color = (0,255,0)))
-#planetlist.append(PlanetClass.planet(4, 500, 400, 10, 0, color = (255,0,0)))
-planetlist.append(PlanetClass.planet(1, 500, 500, 0, 0,  color = (0,0,255), notsubject = True, size = 10))
-#planetlist.append(PlanetClass.planet(1, 700, 500, 0, 0,  color = (0,0,255), notsubject = False, size = 10))
 
-changedgrav = False
+planetlist.append(PlanetClass.planet(1, 400, 500, 0, 0))
+planetlist.append(PlanetClass.planet(1, 500, 500, 0, 0))
+
+
+#planetlist.append(PlanetClass.planet(1, 500, 500, 0, 0,  color = (0,0,255), notsubject = True, size = 10))
+#planetlist.append(PlanetClass.planet(0.1, 200, 500, 0, math.sqrt(1500), color = (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), size = 5))
+#planetlist.append(PlanetClass.planet(0.1, 500, 500, 0, 0, color = (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), size = 5))
+#planetlist.append(PlanetClass.planet(0.001, 200, 450, math.sqrt(5), math.sqrt(1500), color = (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255))))
+
+center_of_force = PlanetClass.planet(0, 0, 0, 0, 0)
+
+planetsspawned = False
+
+go=True
+
+newsimulation = True
 
 def render():
     #print("Render" + str(globalvars.nextrendertime))
     global currentanimation
     global animationfactor
-    global currentanimation
 
     globalvars.GameScreen.fill((0,0,0))
 
@@ -65,22 +74,27 @@ while True:
         if pygame.time.get_ticks() > globalvars.nextticktime+globalvars.tickspeed:
             print("Currently " + str(int((pygame.time.get_ticks()-globalvars.nextticktime)/globalvars.tickspeed)) + " ticks behind.")
             
-        if len(planetlist) < 25:
-            planetlist.append(PlanetClass.planet(0, 500, 400, 10, 0, color = (0,255,0)))
-        elif changedgrav == False:
-            planetlist.append(PlanetClass.planet(0.1, 600, 500, 0, 10, color = (0,255,120), size = 5))
-            planetlist.append(PlanetClass.planet(0.1, 400, 500, 0, -10, color = (0,255,120), size = 5))
-            changedgrav = True
-            for i in planetlist:
-                if i.color == (0,255,0):
-                    i.gravity = 0.01
+        #if len(planetlist) < 25 and not planetsspawned:
+        #    planetlist.append(PlanetClass.planet(0.01, 500, 400, 10, 0, color = (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255))))
+        #else:
+        #    planetsspawned = True
+        #elif changedgrav == False:
+
+        #    changedgrav = True
+        #    for i in planetlist:
+        #        if i.gravity == 0:
+        #            i.gravity = 0.01
 
 
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_g:
+                    go = True
                 if event.key == pygame.K_SPACE:
                     render()
+                if event.key == pygame.K_s:
+                    planetlist.append(PlanetClass.planet(0.01, 500, 400, 10, 0, color = (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255))))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 4:
                     globalvars.tickspersec *=2
@@ -89,25 +103,48 @@ while True:
                     globalvars.tickspersec /=2
                     globalvars.tickspeed = 1000/globalvars.tickspersec
             if event.type == pygame.QUIT:
-                sys.exit
-        for i in planetlist:
-            for j in planetlist:
-                x = i.calculatevelchange(j)
-        poppedlist = []
+                os._exit
+        
+        if newsimulation:        
+            sumgravposx = 0
+            sumgravposy = 0
+            sumgravity = 0
+            for i in planetlist:
+                sumgravposx += i.positionX*i.gravity
+                sumgravposy += i.positionY*i.gravity
+                sumgravity += i.gravity
+            
+            center_of_force.positionX = sumgravposx/sumgravity
+            center_of_force.positionY = sumgravposy/sumgravity
+            center_of_force.gravity = sumgravity
+
+
+
+            if go:
+                for i in planetlist:
+                    i.calculatevelchange(center_of_force)
+        else:
+            if go:
+                for i in planetlist:
+                    for j in planetlist:
+                        i.calculatevelchange(j)
+
+
         for i in range(len(planetlist)):
             for j in range(len(planetlist)):
                 if i != j:
-                    if planetlist[i].collision(planetlist[j]):
-                        poppedlist = [j] + poppedlist
+                    planetlist[i].collision(planetlist[j])
 
-        for i in poppedlist:
-            planetlist.pop(i)
-                        
-
-
-
+        newlist = []
         for i in planetlist:
-            i.move()
+            if i.popped == False:
+                newlist.append(i)
+                        
+        planetlist = newlist
+
+        if go:
+            for i in planetlist:
+                i.move()
 
         textrender = fonty.render("FPS: " + str(fpscounter.give_fps()),0,white)   #creates the text render for the fps
         textrender2 = fonty.render("Ticks per sec: " + str(globalvars.tickspersec), 0, white)
@@ -126,3 +163,4 @@ while True:
         else:                                                       #if the render is a frame behind schedule, skip render and set next rendertime
             print("Skipping rendering of " + str(int((pygame.time.get_ticks()-globalvars.nextrendertime)/globalvars.framespeed)) + " frames.")
             globalvars.nextrendertime = pygame.time.get_ticks() + globalvars.framespeed
+            render()

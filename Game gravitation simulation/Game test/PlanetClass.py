@@ -2,6 +2,11 @@
 import pygame
 import globalvars
 
+global file
+file = open("filenewmethode", mode = "w")
+global x
+x=0
+
 class planet:
     """This class creates planets. Args:Gravity, posx, posy, velocityX, velocityY, color, size"""
     def __init__(self, gravity, positionX, positionY, velocityX, velocityY, color = (255,255,255), size = 2, notsubject = False):
@@ -58,6 +63,7 @@ class planet:
                 self.velocityY += changeY
             else:
                 self.velocityY -= changeY
+            
 
         return True
 
@@ -68,15 +74,27 @@ class planet:
         self.positionY += self.velocityY
 
     def draw(self, currentanimation, animationfactor):
-        pygame.draw.circle(globalvars.GameScreen, self.color, (int(self.lastposX + ((self.positionX-self.lastposX)/animationfactor)*currentanimation), int(self.lastposY + ((self.positionY-self.lastposY)/animationfactor)*currentanimation)), self.size)
+        pygame.draw.circle(globalvars.GameScreen, self.color, (int(self.lastposX + ((self.positionX-self.lastposX)/animationfactor)*currentanimation), int(self.lastposY + ((self.positionY-self.lastposY)/animationfactor)*currentanimation)), int(self.size))
         #pygame.draw.rect(globalvars.GameScreen, self.color, (self.lastposX + ((self.positionX-self.lastposX)/animationfactor)*currentanimation, self.lastposY + ((self.positionY-self.lastposY)/animationfactor)*currentanimation, 5, 5))
 
     def collision(self, other):
+        global x
+        global file
+        if x == 10000:
+            file.close()
+        else:
+            file.writelines(str(self.positionX) + " " + str(self.positionY) + "\n")
+            x+=1
         if self.popped == False and other.popped == False:
+            if other.notsubject or self.notsubject:
+                return False
             if abs(self.positionX-other.positionX) < self.size and abs(self.positionY-other.positionY) < self.size:
-                self.size += int(math.sqrt(other.size))
-                self.velocityX = (self.velocityX + other.velocityX)/2
-                self.velocityY = (self.velocityY + other.velocityY)/2
+                self.size = math.sqrt(self.size**2 + other.size**2)    # A = r**2 * pi,  r = sqrt(A/pi) -> newsize = sqrt(( (self.size**2 * pi) + (other.size**2 * pi) )/pi). Pi can be crossed out to get resulting formula
+                self.velocityX = (self.velocityX*self.gravity + other.velocityX*other.gravity)/(self.gravity + other.gravity)
+                self.velocityY = (self.velocityY*self.gravity + other.velocityY*other.gravity)/(self.gravity + other.gravity)
+                self.color = ((self.color[0]*self.gravity + other.color[0] * other.gravity)/(self.gravity+other.gravity), (self.color[1]*self.gravity + other.color[1] * other.gravity)/(self.gravity+other.gravity), (self.color[2]*self.gravity + other.color[2] * other.gravity)/(self.gravity+other.gravity))
+                self.gravity += other.gravity
+
                 other.popped = True
                 return True
         return False

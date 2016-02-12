@@ -3,7 +3,7 @@
 window_height = 1000
 window_width = 1000
 gamename = "test"
-tickspersec = 10
+tickspersec = 5
 fps = 60
 UnlimitedFPS = False #Turning this to true makes you render as many frames per second as possible
 
